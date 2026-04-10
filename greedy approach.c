@@ -1,0 +1,34 @@
+#include <stdio.h>
+int max(int a, int b) { return (a > b) ? a : b; }
+int main() {
+ int n, budget;
+ printf("Enter number of projects: "); scanf("%d", &n);
+ int cost[n], profit[n];
+ printf("Enter project costs:\n");
+ for (int i = 0; i < n; i++) scanf("%d", &cost[i]);
+ printf("Enter project profits:\n");
+ for (int i = 0; i < n; i++) scanf("%d", &profit[i]);
+ printf("Enter total budget: "); scanf("%d", &budget);
+ int dp[n + 1][budget + 1];
+ for (int i = 0; i <= n; i++) {
+ for (int w = 0; w <= budget; w++) {
+ if (i == 0 || w == 0)
+ dp[i][w] = 0;
+ else if (cost[i-1] <= w)
+ dp[i][w] = max(profit[i-1] + dp[i-1][w - cost[i-1]], dp[i-1][w]);
+ else
+ dp[i][w] = dp[i-1][w];
+ }
+ }
+ printf("\nMaximum Profit: %d\n", dp[n][budget]);
+ int w = budget;
+ printf("Selected Projects (1-based index): ");
+ for (int i = n; i > 0 && w > 0; i--) {
+ if (dp[i][w] != dp[i-1][w]) {
+ printf("%d ", i);
+ w -= cost[i-1];
+ }
+ }
+ printf("\n");
+ return 0;
+}
