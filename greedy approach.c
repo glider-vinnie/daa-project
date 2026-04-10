@@ -1,23 +1,66 @@
 #include <stdio.h>
 
-// Structure for project
-struct Project {
+typedef struct {
     int cost;
     int profit;
     float ratio;
-};
+} Project;
 
-// Function to sort projects by ratio (descending)
-void sortProjects(struct Project p[], int n) {
-    for (int i = 0; i < n - 1; i++) {
-        for (int j = 0; j < n - i - 1; j++) {
-            if (p[j].ratio < p[j + 1].ratio) {
-                struct Project temp = p[j];
-                p[j] = p[j + 1];
-                p[j + 1] = temp;
-            }
+// Merge function
+void merge(Project arr[], int left, int mid, int right) {
+    int i = left, j = mid + 1, k = 0;
+    Project temp[100];
+
+    while (i <= mid && j <= right) {
+        if (arr[i].ratio > arr[j].ratio) {
+            temp[k++] = arr[i++];
+        } else {
+            temp[k++] = arr[j++];
         }
     }
+
+    while (i <= mid)
+        temp[k++] = arr[i++];
+
+    while (j <= right)
+        temp[k++] = arr[j++];
+
+    for (i = left, k = 0; i <= right; i++, k++)
+        arr[i] = temp[k];
+}
+
+// Merge Sort
+void mergeSort(Project arr[], int left, int right) {
+    if (left < right) {
+        int mid = (left + right) / 2;
+        mergeSort(arr, left, mid);
+        mergeSort(arr, mid + 1, right);
+        merge(arr, left, mid, right);
+    }
+}
+
+// Greedy selection
+void selectProjects(Project arr[], int n, int budget) {
+    mergeSort(arr, 0, n - 1);
+
+    float totalProfit = 0.0;
+
+    printf("\nSelected projects:\n");
+
+    for (int i = 0; i < n; i++) {
+        if (budget >= arr[i].cost) {
+            budget -= arr[i].cost;
+            totalProfit += arr[i].profit;
+            printf("Project %d selected fully\n", i + 1);
+        } else {
+            float fraction = (float)budget / arr[i].cost;
+            totalProfit += arr[i].profit * fraction;
+            printf("Project %d selected %.2f fraction\n", i + 1, fraction);
+            break;
+        }
+    }
+
+    printf("\nTotal Profit = %.2f\n", totalProfit);
 }
 
 int main() {
@@ -26,38 +69,18 @@ int main() {
     printf("Enter number of projects: ");
     scanf("%d", &n);
 
-    struct Project p[n];
+    Project arr[n];
 
-    printf("Enter project costs:\n");
     for (int i = 0; i < n; i++) {
-        scanf("%d", &p[i].cost);
-    }
-
-    printf("Enter project profits:\n");
-    for (int i = 0; i < n; i++) {
-        scanf("%d", &p[i].profit);
-        p[i].ratio = (float)p[i].profit / p[i].cost;
+        printf("Enter profit and cost of project %d: ", i + 1);
+        scanf("%d %d", &arr[i].profit, &arr[i].cost);
+        arr[i].ratio = (float)arr[i].profit / arr[i].cost;
     }
 
     printf("Enter total budget: ");
     scanf("%d", &budget);
 
-    // Sort by ratio
-    sortProjects(p, n);
-
-    int totalProfit = 0;
-
-    printf("\nSelected Projects (Greedy):\n");
-
-    for (int i = 0; i < n; i++) {
-        if (budget >= p[i].cost) {
-            printf("Cost: %d, Profit: %d\n", p[i].cost, p[i].profit);
-            budget -= p[i].cost;
-            totalProfit += p[i].profit;
-        }
-    }
-
-    printf("\nTotal Profit (Greedy): %d\n", totalProfit);
+    selectProjects(arr, n, budget);
 
     return 0;
 }
